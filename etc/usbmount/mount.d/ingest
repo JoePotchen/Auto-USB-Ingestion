@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "$UM_MOUNTPOINT"
+
+python3 -u /home/squeak/scripts/ingest.py "$UM_MOUNTPOINT" &
