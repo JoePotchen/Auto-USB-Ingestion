@@ -3,10 +3,8 @@ import logging
 import logging.handlers
 import datetime
 import shutil
-import psutil
 import subprocess
 import sys
-import os
 from shutil import copytree, ignore_patterns
 
 ##sys.argv[1] == Environment variable set by usbmount UM_MOUNTPOINT
@@ -28,21 +26,15 @@ isMounting = True
 if len(sys.argv) > 1:
 	log.debug('The sys arg 1 exists')
 	log.debug('The sys arg is %s'%sys.argv[1])
-	while(isMounting):
-        	if os.listdir(source):
-                	isMounting = False
-                	flag = True
-                	print("Mounted")
-        	else:
-                	print("Not Mounted Yet")
-
-	if(flag):
-        	destination = '/new-pool/network/ingest/%s'%datetime.datetime.now().strftime("%Y-%m-%d %H.%M")
-        	try :
-                	copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
-                	subprocess.call("sudo umount %s" %source, shell=True)
-        	except Exception as e:
-                	print(e)
-
+	source = sys.argv[1]
+	destination = '/new-pool/network/ingest/%s'%datetime.datetime.now().strftime("%Y-%m-%d %H.%M")
+	log.debug("Copying to %s"%destination)
+	try :
+		copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
+		subprocess.call("pumount %s" %source, shell=True)
+		subprocess.call("sudo udevadm trigger --action=remove /sys/class/block/sdd1", shell=True)
+	except Exception as e:
+		log.debug("ERROR")
+		log.critical(e)
 else:
 	log.debug('The sys arg DOES NOT exist')
